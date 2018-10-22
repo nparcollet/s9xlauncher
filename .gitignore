@@ -1,0 +1,14 @@
+Makefile.in
+aclocal.m4
+autom4te.cache
+configure
+depcomp
+install-sh
+missing
+stamp-h1
+INSTALL
+compile
+build
+config.h.in
+config.h.in~
+
