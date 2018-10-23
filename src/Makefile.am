@@ -3,6 +3,8 @@ bin_PROGRAMS = s9xlauncher
 noinst_HEADERS  = sui.h
 
 s9xlauncher_SOURCES  =
+s9xlauncher_SOURCES  += mutex.cpp
+s9xlauncher_SOURCES  += monitor.cpp
 s9xlauncher_SOURCES  += main.cpp
 s9xlauncher_SOURCES  += application.cpp
 s9xlauncher_SOURCES  += menu.cpp
@@ -14,4 +16,4 @@ s9xlauncher_SOURCES  += line_layout.cpp
 
 s9xlauncher_CPPFLAGS = $(CFLAGS) $(SDL2_CFLAGS) -I.
 s9xlauncher_LDFLAGS  = $(LDFLAGS) $(SDL2_LIBS)
-s9xlauncher_LDADD	 = -lSDL2_ttf
+s9xlauncher_LDADD	 = -lSDL2_ttf -lpthread

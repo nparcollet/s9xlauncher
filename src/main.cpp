@@ -1,12 +1,6 @@
 /* Copyright 2018 PARCOLLET Nicolas, see COPYING file */
 #include "sui.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <errno.h>
 
 static std::string rom = "";
 
@@ -15,6 +9,10 @@ class S9XLauncher : public UiMenu
 public:
 
 	S9XLauncher(const std::string & path) : UiMenu(), _path(path)
+	{
+	}
+
+	virtual ~S9XLauncher()
 	{
 	}
 
@@ -55,25 +53,33 @@ public:
 	}
 
 	// Handle events
-	void event(int eid)
+	void event(Event * e)
 	{
-		if (_cur == -1 || _all.size() == 0) {
-			refresh();
-		} else if (eid == EV_CANCEL) {
-			rom.clear();
-			UiApplication::instance().quit();
-		} else if (eid == EV_OK) {
-			rom = _all[_cur];
-			UiApplication::instance().quit();
-		} else  if (eid == EV_LEFT) {
-			_cur = (_all.size() + _cur - 1) % _all.size();
-			_title->setText(_all[_cur]);
-		} else if (eid == EV_RIGHT) {
-			_cur = (_all.size() + _cur + 1) % _all.size();
-			_title->setText(_all[_cur]);
-		} else {
-			SDL_Log("Unhandled event %d", eid);
+		if (e->type() == EV_INPUT) {
+			int key = ((InputEvent*)e)->key();
+			if (_cur == -1 || _all.size() == 0) {
+				refresh();
+			} else if (key == KEY_CANCEL) {
+				rom.clear();
+				UiApplication::instance().quit();
+			} else if (key == KEY_OK) {
+				rom = _all[_cur];
+				UiApplication::instance().quit();
+			} else  if (key == KEY_LEFT) {
+				_cur = (_all.size() + _cur - 1) % _all.size();
+				_title->setText(_all[_cur]);
+			} else if (key == KEY_RIGHT) {
+				_cur = (_all.size() + _cur + 1) % _all.size();
+				_title->setText(_all[_cur]);
+			} else {
+				SDL_Log("Unhandled key %d", key);
+			}
 		}
+
+		else {
+			SDL_Log("Unhandled event %d", e->type());
+		}
+
 	}
 
 private:
@@ -85,7 +91,6 @@ private:
 	std::vector<std::string> _all;
 	int _cur;
 	std::string _path;
-
 };
 
 int main(int argc, char ** argv)

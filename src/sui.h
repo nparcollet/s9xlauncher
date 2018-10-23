@@ -9,16 +9,35 @@
 #include <SDL.h>
 #include <SDL_ttf.h>
 
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <sys/inotify.h>
+#include <sys/stat.h>
+
 #include <dirent.h>
 #include <string.h>
 #include <malloc.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <errno.h>
+#include <pthread.h>
+#include <limits.h>
 
-#define EV_OK		101
-#define EV_CANCEL	102
-#define EV_LEFT		103
-#define EV_RIGHT	104
-#define EV_UP		105
-#define EV_DOWN		106
+#define EV_INPUT	1
+#define EV_ADDED	2
+#define EV_REMOVED	3
+
+#define KEY_OK		101
+#define KEY_CANCEL	102
+#define KEY_LEFT		103
+#define KEY_RIGHT	104
+#define KEY_UP		105
+#define KEY_DOWN		106
+
+
+class Mutex;
+class Monitor;
 
 class UiObject;
 class UiItem;
@@ -26,6 +45,78 @@ class UiLayout;
 class UiTextItem;
 class UiMenu;
 class UiApplication;
+
+class Mutex
+{
+public:
+	Mutex();
+	~Mutex();
+	void lock();
+	void unlock();
+private:
+	pthread_mutex_t _mutex;
+};
+
+class Monitor
+{
+public:
+	Monitor(const std::string & path = "/media");
+	bool start();
+	void stop();
+	void run();
+	void scan();
+private:
+	Mutex _mutex;
+	pthread_t _monitor;
+	std::string _path;
+	int _fd;
+	int _wd;
+};
+
+class Event
+{
+public:
+	Event(int type) : _type(type) {}
+	virtual ~Event() {}
+	int type() const { return _type; }
+private:
+	int _type;
+};
+
+class StorageAddedEvent : public Event
+{
+public:
+	StorageAddedEvent(const std::string & device, const std::string & mountpoint)
+	: Event(EV_ADDED), _device(device), _mountpoint(mountpoint) {}
+	~StorageAddedEvent() {}
+	std::string device() const { return _device; }
+	std::string mountpoint() const { return _mountpoint; }
+private:
+	std::string _device;
+	std::string _mountpoint;
+};
+
+class StorageRemovedEvent : public Event
+{
+public:
+	StorageRemovedEvent(const std::string & device)
+	: Event(EV_REMOVED), _device(device) {}
+	~StorageRemovedEvent() {}
+	std::string device() const { return _device; }
+private:
+	std::string _device;
+};
+
+class InputEvent : public Event
+{
+public:
+	InputEvent(int key)
+	: Event(EV_INPUT), _key(key) {}
+	~InputEvent() {}
+	int key() const { return _key; }
+private:
+	int _key;
+};
 
 class UiObject
 {
@@ -126,7 +217,7 @@ public:
 	virtual ~UiMenu();
 	void render(SDL_Renderer * renderer);
 	virtual UiObject * build() = 0;
-	virtual void event(int eid) = 0;
+	virtual void event(Event * event) = 0;
 private:
 	UiObject * _root;
 	int _width;
@@ -142,6 +233,7 @@ public:
 	void show(UiMenu * menu);
 	void quit();
 	void run();
+	void post(Event * event);
 protected:
 	UiApplication();
 	~UiApplication();
@@ -154,6 +246,9 @@ private:
 	std::list<SDL_Joystick *> _joysticks;
 	UiMenu * _menu;
 	bool _quit;
+	std::list<Event*> _events;
+	Mutex _mutex;
+	Monitor _monitor;
 };
 
 #endif // SIMPLE_UI_H

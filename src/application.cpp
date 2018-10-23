@@ -65,6 +65,14 @@ void UiApplication::run()
 		unsigned int start = SDL_GetTicks();
 		if (_menu) {
 			input();
+			_mutex.lock();
+			std::list<Event*>::iterator ite = _events.begin();
+			while (ite != _events.end()) {
+				_menu->event(*ite);
+				delete *ite;
+				ite = _events.erase(ite);
+			}
+			_mutex.unlock();
 			render();
 		}
 		unsigned int end = SDL_GetTicks();
@@ -88,30 +96,28 @@ UiApplication::UiApplication()
 	_renderer(nullptr),
 	_menu(nullptr)
 {
+	_monitor.start();
 }
 
 UiApplication::~UiApplication()
 {
+	_monitor.stop();
 	stop();
+}
+
+void UiApplication::post(Event * event)
+{
+	_mutex.lock();
+	_events.push_back(event);
+	_mutex.unlock();
 }
 
 void UiApplication::input()
 {
-	// Joystick repeat:
-	// - we have a map of all 'keys' currently pressed
-	// - for each key we store the next time this should be retriggered
-	// - on down, set to now + a delay
-	// - a new block of code go throu to repeat entries
-	// - when now > expected trigger, we retrigger and update the next repeat
-	// - on event released, remove entry from the map.
-	// Button Up: set time as -1
-	// In addition to event, check entry != -1 and retrigger after a delay
 	static int rate  = 40;  // 25/s
 	static int delay = 660; // Before first repeat
 	static std::map<int, int> lastsent;
-
 	unsigned int now = SDL_GetTicks();
-
 	SDL_Event event;
 	while (SDL_PollEvent(&event)) {
 
@@ -121,62 +127,62 @@ void UiApplication::input()
 
 		else if (event.type == SDL_KEYDOWN) {
 			if (event.key.keysym.sym == SDLK_UP) {
-				_menu->event(EV_UP);
+				post(new InputEvent(KEY_UP));
 			} else if (event.key.keysym.sym == SDLK_DOWN) {
-				_menu->event(EV_DOWN);
+				post(new InputEvent(KEY_DOWN));
 			} else if (event.key.keysym.sym == SDLK_LEFT) {
-				_menu->event(EV_LEFT);
+				post(new InputEvent(KEY_LEFT));
 			} else if (event.key.keysym.sym == SDLK_RIGHT) {
-				_menu->event(EV_RIGHT);
+				post(new InputEvent(KEY_RIGHT));
 			} else if (event.key.keysym.sym == SDLK_RETURN) {
-				_menu->event(EV_OK);
+				post(new InputEvent(KEY_OK));
 			} else if (event.key.keysym.sym == SDLK_ESCAPE) {
-				_menu->event(EV_CANCEL);
+				post(new InputEvent(KEY_CANCEL));
 			}
 		}
 
 		else if (event.type == SDL_JOYBUTTONDOWN) {
 			if (event.jbutton.button == 0) {
-				lastsent[EV_OK] = now + delay;
-				_menu->event(EV_OK);
+				lastsent[KEY_OK] = now + delay;
+				post(new InputEvent(KEY_OK));
 			} else if (event.jbutton.button == 1) {
-				lastsent[EV_CANCEL] = now + delay;
-				_menu->event(EV_CANCEL);
+				lastsent[KEY_CANCEL] = now + delay;
+				post(new InputEvent(KEY_CANCEL));
 			}
 		}
 
 		else if (event.type == SDL_JOYBUTTONUP) {
 			if (event.jbutton.button == 0) {
-				lastsent.erase(EV_OK);
+				lastsent.erase(KEY_OK);
 			} else if (event.jbutton.button == 1) {
-				lastsent.erase(EV_CANCEL);
+				lastsent.erase(KEY_CANCEL);
 			}
 		}
 
 		else if (event.type == SDL_JOYHATMOTION) {
 			if (event.jhat.value & SDL_HAT_UP) {
-				lastsent[EV_UP] = now + delay;
-				_menu->event(EV_UP);
+				lastsent[KEY_UP] = now + delay;
+				post(new InputEvent(KEY_UP));
 			} else {
-				lastsent.erase(EV_UP);
+				lastsent.erase(KEY_UP);
 			}
 			if (event.jhat.value & SDL_HAT_DOWN) {
-				lastsent[EV_DOWN] = now + delay;
-				_menu->event(EV_DOWN);
+				lastsent[KEY_DOWN] = now + delay;
+				post(new InputEvent(KEY_DOWN));
 			} else {
-				lastsent.erase(EV_DOWN);
+				lastsent.erase(KEY_DOWN);
 			}
 			if (event.jhat.value & SDL_HAT_LEFT) {
-				lastsent[EV_LEFT] = now + delay;
-				_menu->event(EV_LEFT);
+				lastsent[KEY_LEFT] = now + delay;
+				post(new InputEvent(KEY_LEFT));
 			} else {
-				lastsent.erase(EV_LEFT);
+				lastsent.erase(KEY_LEFT);
 			}
 			if (event.jhat.value & SDL_HAT_RIGHT) {
-				lastsent[EV_RIGHT] = now + delay;
-				_menu->event(EV_RIGHT);
+				lastsent[KEY_RIGHT] = now + delay;
+				post(new InputEvent(KEY_RIGHT));
 			} else {
-				lastsent.erase(EV_RIGHT);
+				lastsent.erase(KEY_RIGHT);
 			}
 		}
 
@@ -210,7 +216,7 @@ void UiApplication::input()
 	while (ite != lastsent.end()) {
 		if (ite->second != -1 && now > ite->second) {
 			lastsent[ite->first] = now + rate;
-			_menu->event(ite->first);
+			post(new InputEvent(ite->first));
 		}
 		++ ite;
 	}
