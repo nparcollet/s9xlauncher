@@ -11,13 +11,17 @@ UiMenu::~UiMenu()
 	}
 }
 
+void UiMenu::setRoot(UiObject * root)
+{
+	_root = root;
+}
+
 void UiMenu::render(SDL_Renderer * renderer)
 {
 	int w, h;
 	SDL_RenderGetLogicalSize(renderer, &w, &h);
-	if (!_root) {
-		_root = build();
+	if (_root) {
+		_root->moveTo(w/2, h/2);
+		_root->render(renderer);
 	}
-	_root->moveTo(w/2, h/2);
-	_root->render(renderer);
 }

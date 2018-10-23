@@ -4,7 +4,8 @@
 UiItem::UiItem()
 :
 	UiObject(),
-	_texture(nullptr)
+	_texture(nullptr),
+	_visible(true)
 {
 }
 
@@ -13,6 +14,20 @@ UiItem::~UiItem()
 	if (_texture) {
 		SDL_DestroyTexture(_texture);
 	}
+}
+
+void UiItem::hide()
+{
+	setVisible(false);
+}
+void UiItem::show()
+{
+	setVisible(true);
+}
+
+void UiItem::setVisible(bool visible)
+{
+	_visible = visible;
 }
 
 void UiItem::invalidate()
@@ -27,18 +42,20 @@ void UiItem::invalidate()
 
 void UiItem::render(SDL_Renderer * renderer)
 {
-	SDL_Rect dst;
-	dst.x = absx() - width() / 2;
-	dst.y = absy() - height() / 2;
-	dst.w = width();
-	dst.h = height();
-	if (!_texture) {
-		SDL_Surface * surface = prepare();
-		_texture = SDL_CreateTextureFromSurface(renderer, surface);
-		SDL_FreeSurface(surface);
-		SDL_QueryTexture(_texture, nullptr, nullptr, &_width, &_height);
+	if (_visible) {
+		SDL_Rect dst;
+		dst.x = absx() - width() / 2;
+		dst.y = absy() - height() / 2;
+		dst.w = width();
+		dst.h = height();
+		if (!_texture) {
+			SDL_Surface * surface = prepare();
+			_texture = SDL_CreateTextureFromSurface(renderer, surface);
+			SDL_FreeSurface(surface);
+			SDL_QueryTexture(_texture, nullptr, nullptr, &_width, &_height);
+		}
+		SDL_RenderCopy(renderer, _texture, nullptr, &dst);
 	}
-	SDL_RenderCopy(renderer, _texture, nullptr, &dst);
 }
 
 SDL_Color UiItem::make_color(int rgba)

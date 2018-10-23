@@ -151,12 +151,16 @@ public:
 	SDL_Color make_color(int rgba);
 	int width() const;
 	int height() const;
+	void hide();
+	void show();
+	void setVisible(bool visible);
 protected:
 	virtual SDL_Surface * prepare() = 0;
 private:
 	SDL_Texture * _texture;
 	int _width;
 	int _height;
+	bool _visible;
 };
 
 class UiTextItem : public UiItem
@@ -216,8 +220,9 @@ public:
 	UiMenu();
 	virtual ~UiMenu();
 	void render(SDL_Renderer * renderer);
-	virtual UiObject * build() = 0;
 	virtual void event(Event * event) = 0;
+protected:
+	void setRoot(UiObject * root);
 private:
 	UiObject * _root;
 	int _width;
