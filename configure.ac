@@ -15,4 +15,4 @@ AC_MSG_NOTICE([*** Build Information ***])
 AC_MSG_NOTICE([  ... SDL2 CFLAGS: ${SDL2_CFLAGS}])
 AC_MSG_NOTICE([  ... SDL2 LIBS: ${SDL2_LIBS}])
 
-AC_OUTPUT([Makefile src/Makefile])
+AC_OUTPUT([Makefile src/Makefile assets/Makefile])
