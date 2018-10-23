@@ -11,13 +11,14 @@ public:
 	S9XLauncher() : UiMenu()
 	{
 		_cur = _all.end();
-		_vline = new UiLineLayout(2, 300, 90);
+		_vline = new UiLineLayout(3, 450, 90);
 		_hline = new UiLineLayout(3, 900, 0);
 		_hline->set(0, _left = new UiTextItem("<", 48, 0x336699FF));
 		_hline->set(1, _title = new UiTextItem("", 32, 0xAAAAAAFF));
 		_hline->set(2, _right = new UiTextItem(">", 48, 0x336699FF));
 		_vline->set(0, new UiTextItem("SNES9X Launcher", 64, 0xFFFFFFFF));
-		_vline->set(1, _hline);
+		_vline->set(1, _image = new UiImageItem(450, 300, ""));
+		_vline->set(2, _hline);
 		setRoot(_vline);
 	}
 
@@ -91,6 +92,7 @@ protected:
 					rom.device = device;
 					rom.path   = mountpoint + "/" + ent->d_name;
 					rom.name   = std::string(ent->d_name).substr(0, strlen(ent->d_name) - 4);
+					rom.cover  = mountpoint + "/" +  rom.name + ".jpg";
 					_all.push_back(rom);
 					SDL_Log("Added rom %s from %s", rom.name.c_str(), rom.device.c_str());
 				}
@@ -108,10 +110,12 @@ protected:
 			_title->setText("Please connect a disk with ROM files");
 			_left->hide();
 			_right->hide();
+			_image->setPath("");
 		} else {
 			_title->setText(_cur->name);
 			_left->show();
 			_right->show();
+			_image->setPath(_cur->cover);
 		}
 	}
 
@@ -120,6 +124,7 @@ private:
 	typedef struct {
 		std::string device;
 		std::string path;
+		std::string cover;
 		std::string name;
 	} Rom;
 
@@ -129,6 +134,7 @@ private:
 	UiTextItem * _title;
 	UiTextItem * _left;
 	UiTextItem * _right;
+	UiImageItem * _image;
 
 	std::list<Rom> _all;
 	std::list<Rom>::iterator _cur;

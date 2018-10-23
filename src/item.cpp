@@ -49,12 +49,16 @@ void UiItem::render(SDL_Renderer * renderer)
 		dst.w = width();
 		dst.h = height();
 		if (!_texture) {
-			SDL_Surface * surface = prepare();
-			_texture = SDL_CreateTextureFromSurface(renderer, surface);
-			SDL_FreeSurface(surface);
-			SDL_QueryTexture(_texture, nullptr, nullptr, &_width, &_height);
+			_texture = prepare();
+			if (_texture) {
+				SDL_QueryTexture(_texture, nullptr, nullptr, &_width, &_height);
+				SDL_RenderCopy(renderer, _texture, nullptr, &dst);
+			} else {
+				SDL_Log("UiItem(), no texture after prepare!");
+			}
+		} else {
+			SDL_RenderCopy(renderer, _texture, nullptr, &dst);
 		}
-		SDL_RenderCopy(renderer, _texture, nullptr, &dst);
 	}
 }
 

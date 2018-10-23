@@ -13,12 +13,15 @@ UiTextItem::~UiTextItem()
 {
 }
 
-SDL_Surface * UiTextItem::prepare()
+SDL_Texture * UiTextItem::prepare()
 {
+	SDL_Renderer * renderer = UiApplication::instance().renderer();
 	TTF_Font * font = TTF_OpenFont("/usr/share/s9xlauncher/roboto.ttf", _size);
 	SDL_Surface * surface = TTF_RenderText_Solid(font, _text.c_str(), make_color(_color));
+	SDL_Texture * texture = SDL_CreateTextureFromSurface(renderer, surface);
+	SDL_FreeSurface(surface);
 	TTF_CloseFont(font);
-	return surface;
+	return texture;
 }
 
 void UiTextItem::setText(const std::string & text)

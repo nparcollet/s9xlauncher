@@ -222,6 +222,16 @@ void UiApplication::input()
 	}
 }
 
+SDL_Renderer * UiApplication::renderer()
+{
+	return _renderer;
+}
+
+const SDL_Renderer * UiApplication::renderer() const
+{
+	return _renderer;
+}
+
 void UiApplication::render()
 {
 	SDL_SetRenderDrawColor(_renderer, 0, 0, 0, 255);

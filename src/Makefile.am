@@ -13,7 +13,8 @@ s9xlauncher_SOURCES  += item.cpp
 s9xlauncher_SOURCES  += layout.cpp
 s9xlauncher_SOURCES  += text_item.cpp
 s9xlauncher_SOURCES  += line_layout.cpp
+s9xlauncher_SOURCES  += image_item.cpp
 
 s9xlauncher_CPPFLAGS = $(CFLAGS) $(SDL2_CFLAGS) -I.
 s9xlauncher_LDFLAGS  = $(LDFLAGS) $(SDL2_LIBS)
-s9xlauncher_LDADD	 = -lSDL2_ttf -lpthread
+s9xlauncher_LDADD	 = -lSDL2_ttf -lSDL2_image -lpthread

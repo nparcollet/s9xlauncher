@@ -8,6 +8,7 @@
 
 #include <SDL.h>
 #include <SDL_ttf.h>
+#include <SDL_image.h>
 
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -30,10 +31,10 @@
 
 #define KEY_OK		101
 #define KEY_CANCEL	102
-#define KEY_LEFT		103
+#define KEY_LEFT	103
 #define KEY_RIGHT	104
 #define KEY_UP		105
-#define KEY_DOWN		106
+#define KEY_DOWN	106
 
 
 class Mutex;
@@ -155,7 +156,7 @@ public:
 	void show();
 	void setVisible(bool visible);
 protected:
-	virtual SDL_Surface * prepare() = 0;
+	virtual SDL_Texture * prepare() = 0;
 private:
 	SDL_Texture * _texture;
 	int _width;
@@ -172,11 +173,25 @@ public:
 	void setColor(int color);
 	void setSize(int size);
 protected:
-	SDL_Surface * prepare();
+	SDL_Texture * prepare();
 private:
 	std::string _text;
 	int _size;
 	int _color;
+};
+
+class UiImageItem : public UiItem
+{
+public:
+	UiImageItem(int maxWidth, int maxHeight, const std::string & path);
+	virtual ~UiImageItem();
+	void setPath(const std::string & path);
+protected:
+	SDL_Texture * prepare();
+private:
+	std::string _path;
+	int _maxWidth;
+	int _maxHeight;
 };
 
 class UiLayout : public UiObject
@@ -239,6 +254,8 @@ public:
 	void quit();
 	void run();
 	void post(Event * event);
+	SDL_Renderer * renderer();
+	const SDL_Renderer * renderer() const;
 protected:
 	UiApplication();
 	~UiApplication();
