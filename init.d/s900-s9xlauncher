@@ -1,0 +1,4 @@
+#!/bin/sh
+/usr/sbin/fbset 720x576x16
+/usr/bin/s9xlauncher &
+
