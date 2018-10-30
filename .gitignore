@@ -1,4 +1,6 @@
 Makefile.in
+Makefile
+*.o
 aclocal.m4
 autom4te.cache
 configure
@@ -7,8 +9,13 @@ install-sh
 missing
 stamp-h1
 INSTALL
+config.status
+s9xlauncher
 compile
 build
+config.h
+config.log
 config.h.in
 config.h.in~
+.deps
 
