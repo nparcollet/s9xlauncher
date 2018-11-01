@@ -16,6 +16,16 @@ void UiMenu::setRoot(UiObject * root)
 	_root = root;
 }
 
+void UiMenu::show()
+{
+	UiApplication::instance().show(this);
+}
+
+void UiMenu::hide()
+{
+	UiApplication::instance().show(nullptr);
+}
+
 void UiMenu::render(SDL_Renderer * renderer)
 {
 	int w, h;

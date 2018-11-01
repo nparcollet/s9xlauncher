@@ -35,10 +35,6 @@ void UiApplication::stop()
 		++ jite;
 	}
 	_joysticks.clear();
-	if (_menu) {
-		delete _menu;
-		_menu = nullptr;
-	}
 	if (_renderer) {
 		SDL_DestroyRenderer(_renderer);
 		_renderer = nullptr;
@@ -76,7 +72,7 @@ void UiApplication::run()
 			render();
 		}
 		unsigned int end = SDL_GetTicks();
-		if (end - start < 20) {
+		if (end - start < 40) {
 			SDL_Delay(end - start);
 		}
 	}
@@ -84,9 +80,6 @@ void UiApplication::run()
 
 void UiApplication::show(UiMenu * menu)
 {
-	if (_menu) {
-		delete _menu;
-	}
 	_menu = menu;
 }
 
@@ -238,6 +231,6 @@ void UiApplication::render()
 	SDL_RenderClear(_renderer);
 	if (_menu) {
 		_menu->render(_renderer);
+		SDL_RenderPresent(_renderer);
 	}
-	SDL_RenderPresent(_renderer);
 }

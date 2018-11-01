@@ -5,6 +5,8 @@
 #include <list>
 #include <map>
 #include <vector>
+#include <iostream>
+#include <fstream>
 
 #include <SDL.h>
 #include <SDL_ttf.h>
@@ -236,6 +238,8 @@ public:
 	virtual ~UiMenu();
 	void render(SDL_Renderer * renderer);
 	virtual void event(Event * event) = 0;
+	void show();
+	void hide();
 protected:
 	void setRoot(UiObject * root);
 private:

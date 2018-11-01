@@ -2,13 +2,88 @@
 #include "sui.h"
 
 
-static std::string SelectedRom = "";
-
-class S9XLauncher : public UiMenu
+class S9XLauncher
 {
 public:
 
-	S9XLauncher() : UiMenu()
+	S9XLauncher(const std::string & path)
+	:
+		_path(path)
+	{
+	}
+
+	bool start()
+	{
+		if (_path.empty()) {
+			SDL_Log("Unable to start, no path specified");
+		} else if (!mkconf()) {
+			SDL_Log("Unable to start, failed to created configuration");
+		} else {
+			SDL_Log("Starting ROM at %s (%s)", _path.c_str(), basedir().c_str());
+			std::string cmd = "/usr/bin/snes9x -nomouse -nostdconf -conf /tmp/snes9x.conf '" + _path + "'";
+			system(cmd.c_str());
+			SDL_PumpEvents();
+			SDL_FlushEvents(SDL_FIRSTEVENT, SDL_LASTEVENT);
+			return true;
+		}
+		return false;
+	}
+
+protected:
+
+	std::string basedir()
+	{
+		int p = _path.rfind("/");
+		if (p != std::string::npos) {
+			return _path.substr(0, p);
+		} else {
+			return "/";
+		}
+	}
+
+	bool mkconf()
+	{
+		std::ofstream handle;
+		handle.open("/tmp/snes9x.conf");
+		if (!handle.is_open()) {
+			SDL_Log("Failed to open snes9x configuration file");
+		} else {
+			handle << "[Display]" << std::endl;
+			handle << "DisplayFrameRate = TRUE" << std::endl;
+			handle << "[Settings]" << std::endl;
+			handle << "FrameSkip = 1" << std::endl;
+			handle << "[Unix]" << std::endl;
+			handle << "BaseDir=" << basedir() << "/snes9x" << std::endl;
+			handle << "[Unix/SDL2 Controls]" << std::endl;
+			handle << "J00:Axis0 = Joypad1 Axis Left/Right T=50%" << std::endl;
+			handle << "J00:Axis1 = Joypad1 Axis Up/Down T=50%" << std::endl;
+			handle << "J00:B1 = Joypad1 A" << std::endl;
+			handle << "J00:B0 = Joypad1 B" << std::endl;
+			handle << "J00:B2 = Joypad1 X" << std::endl;
+			handle << "J00:B3 = Joypad1 Y" << std::endl;
+			handle << "J00:B4 = Joypad1 L" << std::endl;
+			handle << "J00:B5 = Joypad1 R" << std::endl;
+			handle << "J00:B9 = Joypad1 Select" << std::endl;
+			handle << "J00:B8 = Joypad1 Start" << std::endl;
+			handle << "J00:B10 = ExitEmu" << std::endl;
+			handle.close();
+			return true;
+		}
+		return false;
+	}
+
+private:
+	std::string _path;
+};
+
+class S9XHome : public UiMenu
+{
+public:
+
+	S9XHome()
+	:
+		UiMenu(),
+		_triggered(time(nullptr))
 	{
 		_cur = _all.end();
 		_vline = new UiLineLayout(3, 450, 90);
@@ -22,7 +97,7 @@ public:
 		setRoot(_vline);
 	}
 
-	virtual ~S9XLauncher()
+	virtual ~S9XHome()
 	{
 	}
 
@@ -33,11 +108,13 @@ public:
 			if (_cur == _all.end()) {
 				refresh();
 			} else if (key == KEY_CANCEL) {
-				SelectedRom.clear();
 				UiApplication::instance().quit();
 			} else if (key == KEY_OK) {
-				SelectedRom = _cur->path;
-				UiApplication::instance().quit();
+				if (time(nullptr) - _triggered > 5) {
+					S9XLauncher launcher(_cur->path);
+					launcher.start();
+					_triggered = time(nullptr);
+				}
 			} else  if (key == KEY_LEFT) {
 				-- _cur;
 				if (_cur == _all.end()) {
@@ -138,22 +215,18 @@ private:
 
 	std::list<Rom> _all;
 	std::list<Rom>::iterator _cur;
+	time_t _triggered;
 };
 
 int main(int argc, char ** argv)
 {
-	if (!UiApplication::instance().start(1280, 720)) {
+	UiApplication & app = UiApplication::instance();
+	if (!app.start(1280, 720)) {
 		SDL_Log("Failed to setup launcher");
 	} else {
-		S9XLauncher * launcher = new S9XLauncher();
-		UiApplication::instance().show(launcher);
-		UiApplication::instance().run();
-		if (!SelectedRom.empty()) {
-			SDL_Log("Starting ROM at: %s", SelectedRom.c_str());
-			std::string cmd = "/usr/bin/snes9x -nomouse '" + SelectedRom + "'";
-			UiApplication::instance().stop();
-			system(cmd.c_str());
-		}
+		S9XHome * home = new S9XHome();
+		home->show();
+		app.run();
 		return 0;
 	}
 	return 1;
