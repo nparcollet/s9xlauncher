@@ -1,4 +1,4 @@
-#include "sui.h"
+#include "gui.h"
 
 UiLineLayout::UiLineLayout(int count, int length, int angle)
 :

@@ -1,4 +1,4 @@
-#include "sui.h"
+#include "gui.h"
 
 UiImageItem::UiImageItem(int maxWidth, int maxHeight, const std::string & path)
 :

@@ -1,4 +1,4 @@
-#include "sui.h"
+#include "gui.h"
 
 #define BUF_LEN (10 * (sizeof(struct inotify_event) + NAME_MAX + 1))
 

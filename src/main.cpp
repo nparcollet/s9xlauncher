@@ -1,6 +1,6 @@
 /* Copyright 2018 PARCOLLET Nicolas, see COPYING file */
-#include "sui.h"
-
+#include "gui.h"
+#include "core.h"
 
 class S9XLauncher
 {

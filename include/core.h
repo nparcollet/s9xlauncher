@@ -3,6 +3,9 @@
 
 #include <pthread.h>
 
+class Mutex;
+class Condition;
+
 class Mutex
 {
 public:

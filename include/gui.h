@@ -1,5 +1,5 @@
-#ifndef SIMPLE_UI_H
-#define SIMPLE_UI_H
+#ifndef GUI_H
+#define GUI_H
 
 #include <string>
 #include <list>
@@ -41,7 +41,6 @@
 #define KEY_DOWN	106
 
 
-class Mutex;
 class Monitor;
 
 class UiObject;
@@ -268,4 +267,4 @@ private:
 	Monitor _monitor;
 };
 
-#endif // SIMPLE_UI_H
+#endif // GUI_H

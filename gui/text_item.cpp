@@ -1,4 +1,4 @@
-#include "sui.h"
+#include "gui.h"
 
 UiTextItem::UiTextItem(const std::string & txt, int size, int color)
 :
