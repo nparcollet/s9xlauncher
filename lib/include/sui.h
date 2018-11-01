@@ -27,6 +27,8 @@
 #include <pthread.h>
 #include <limits.h>
 
+#include "core.h"
+
 #define EV_INPUT	1
 #define EV_ADDED	2
 #define EV_REMOVED	3
@@ -48,17 +50,6 @@ class UiLayout;
 class UiTextItem;
 class UiMenu;
 class UiApplication;
-
-class Mutex
-{
-public:
-	Mutex();
-	~Mutex();
-	void lock();
-	void unlock();
-private:
-	pthread_mutex_t _mutex;
-};
 
 class Monitor
 {
