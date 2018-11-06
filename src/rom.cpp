@@ -8,9 +8,17 @@ S9XRom::S9XRom(const std::string & device, const std::string & basedir, const st
 	_filename(filename)
 {
 	struct stat st;
-	_path  = _basedir + "/" + _filename;
+
 	_name  = _filename.substr(0, _filename.length() - 4); // .smc
 	_cover = "";
+	_path  = _basedir + "/" + _filename;
+
+	int p = _path.find('\'');
+	while (p != std::string::npos) {
+		_path = _path.replace(p, 1, "'\\''");
+		p = _path.find('\'', p + 4);
+	}
+
 	if (stat((_basedir + "/" + _name + ".jpg").c_str(), &st) == 0) {
 		_cover = _basedir + "/" + _name + ".jpg";
 	} else if (stat((_basedir + "/" + _name + ".jpeg").c_str(), &st) == 0) {
