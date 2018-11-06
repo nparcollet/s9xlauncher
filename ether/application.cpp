@@ -18,10 +18,21 @@ void Application::quit()
 	_quit = true;
 }
 
+void Application::suspend()
+{
+	_suspend = true;
+}
+
+void Application::resume()
+{
+	_suspend = false;
+	_repeat.clear();
+}
+
 int Application::run(int width, int height)
 {
 	if (!Dispatcher::instance().attach(this)) {
-		LOG_ERROR("Application(), failed to attach dispatcher");		
+		LOG_ERROR("Application(), failed to attach dispatcher");
 	} else if (!Cache::instance().start()) {
 		LOG_ERROR("Application(), failed to start the CACHE service");
 	} else if (!Storage::instance().start()) {
@@ -43,6 +54,7 @@ int Application::run(int width, int height)
 	} else {
 		LOG_DEBUG("Application(), Starting application event loop");
 		_quit = false;
+		_suspend = false;
 		while(!_quit) {
 
 			// TODO: Better than that, ultimatly, Dispatcher is the only thing we loop on, and we,
@@ -160,11 +172,10 @@ void Application::input()
 {
 	static int rate  = 40;  // 25/s
 	static int delay = 660; // Before first repeat
-	static std::map<int, int> lastsent;
 	unsigned int now = SDL_GetTicks();
 	SDL_Event e;
-	while (SDL_PollEvent(&e)) {
 
+	while (!_suspend && SDL_PollEvent(&e)) {
 
 		// SDL Requested application to stop
 		if (e.type == SDL_QUIT) {
@@ -191,10 +202,10 @@ void Application::input()
 		// Joystick button down event
 		else if (e.type == SDL_JOYBUTTONDOWN) {
 			if (e.jbutton.button == 0) {
-				lastsent[KEY_OK] = now + delay;
+				_repeat[KEY_OK] = now + delay;
 				Dispatcher::instance().post(Event("app", "key", std::vector<Variant>({KEY_OK})));
 			} else if (e.jbutton.button == 1) {
-				lastsent[KEY_CANCEL] = now + delay;
+				_repeat[KEY_CANCEL] = now + delay;
 				Dispatcher::instance().post(Event("app", "key", std::vector<Variant>({KEY_CANCEL})));
 			}
 		}
@@ -202,37 +213,37 @@ void Application::input()
 		// Joystick button up event
 		else if (e.type == SDL_JOYBUTTONUP) {
 			if (e.jbutton.button == 0) {
-				lastsent.erase(KEY_OK);
+				_repeat.erase(KEY_OK);
 			} else if (e.jbutton.button == 1) {
-				lastsent.erase(KEY_CANCEL);
+				_repeat.erase(KEY_CANCEL);
 			}
 		}
 
 		// Joystick hat event
 		else if (e.type == SDL_JOYHATMOTION) {
 			if (e.jhat.value & SDL_HAT_UP) {
-				lastsent[KEY_UP] = now + delay;
+				_repeat[KEY_UP] = now + delay;
 				Dispatcher::instance().post(Event("app", "key", std::vector<Variant>({KEY_UP})));
 			} else {
-				lastsent.erase(KEY_UP);
+				_repeat.erase(KEY_UP);
 			}
 			if (e.jhat.value & SDL_HAT_DOWN) {
-				lastsent[KEY_DOWN] = now + delay;
+				_repeat[KEY_DOWN] = now + delay;
 				Dispatcher::instance().post(Event("app", "key", std::vector<Variant>({KEY_DOWN})));
 			} else {
-				lastsent.erase(KEY_DOWN);
+				_repeat.erase(KEY_DOWN);
 			}
 			if (e.jhat.value & SDL_HAT_LEFT) {
-				lastsent[KEY_LEFT] = now + delay;
+				_repeat[KEY_LEFT] = now + delay;
 				Dispatcher::instance().post(Event("app", "key", std::vector<Variant>({KEY_LEFT})));
 			} else {
-				lastsent.erase(KEY_LEFT);
+				_repeat.erase(KEY_LEFT);
 			}
 			if (e.jhat.value & SDL_HAT_RIGHT) {
-				lastsent[KEY_RIGHT] = now + delay;
+				_repeat[KEY_RIGHT] = now + delay;
 				Dispatcher::instance().post(Event("app", "key", std::vector<Variant>({KEY_RIGHT})));
 			} else {
-				lastsent.erase(KEY_RIGHT);
+				_repeat.erase(KEY_RIGHT);
 			}
 		}
 
@@ -265,10 +276,10 @@ void Application::input()
 	}
 
 	// Simulate repeat event for joysticks
-	std::map<int, int>::iterator ite = lastsent.begin();
-	while (ite != lastsent.end()) {
+	std::map<int, int>::iterator ite = _repeat.begin();
+	while (ite != _repeat.end()) {
 		if (ite->second != -1 && now > ite->second) {
-			lastsent[ite->first] = now + rate;
+			_repeat[ite->first] = now + rate;
 			Dispatcher::instance().post(Event("app", "key", std::vector<Variant>({ite->first})));
 		}
 		++ ite;

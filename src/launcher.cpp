@@ -36,7 +36,9 @@ void S9XLauncher::onKeyPressed(int key)
 		} else if (key == KEY_RIGHT) {
 			_current = (_current + 1) % _roms.size();
 		} else if (key == KEY_OK) {
+			suspend();
 			_roms[_current].run();
+			resume();
 		} else {
 			LOG_WARNING("S9XLauncher(), Unmappaed key event %d", key);
 		}

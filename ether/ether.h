@@ -213,6 +213,8 @@ public:
 	void dispatch(const Event & event);
 	void quit();
 	virtual Object * build() = 0;
+	void suspend();
+	void resume();
 protected:
 	virtual void onKeyPressed(int key);
 	virtual void onStorageAdded(const std::string & device, const std::string & mountPoint);
@@ -230,6 +232,8 @@ private:
 	bool _quit;
 	Mutex _mutex;
 	Cache * _cache;
+	std::map<int, int> _repeat; // Key repeat
+	bool _suspend;
 };
 
 // Service that manages a cache of images that can be loaded asynchroneously
