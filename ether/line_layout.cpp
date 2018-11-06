@@ -1,41 +1,42 @@
-#include "gui.h"
+/* Copyright 2018 PARCOLLET Nicolas, see COPYING file */
+#include "ether.h"
 
-UiLineLayout::UiLineLayout(int count, int length, int angle)
+LineLayout::LineLayout(int count, int length, int angle)
 :
-	UiLayout(),
+	Layout(),
 	_length(length),
 	_angle(angle)
 {
 	resize(count);
 }
 
-UiLineLayout::~UiLineLayout()
+LineLayout::~LineLayout()
 {
 }
 
-void UiLineLayout::setLength(int length)
+void LineLayout::setLength(int length)
 {
 	_length = length;
 	refresh();
 }
 
-void UiLineLayout::setAngle(int angle)
+void LineLayout::setAngle(int angle)
 {
 	_angle = angle;
 	refresh();
 }
 
-int UiLineLayout::length() const
+int LineLayout::length() const
 {
 	return _length;
 }
 
-int UiLineLayout::angle() const
+int LineLayout::angle() const
 {
 	return _angle;
 }
 
-void UiLineLayout::refresh()
+void LineLayout::refresh()
 {
 	if (count() < 1) {
 		return;
@@ -45,7 +46,7 @@ void UiLineLayout::refresh()
 		float a = _angle * 3.14 / 180.0;
 		float s = _length / (count() - 1);
 		for (int i = 0; i < count(); i ++) {
-			UiObject * obj = get(i);
+			Object * obj = get(i);
 			if (obj) {
 				obj->moveTo(cos(a) * (i*s -_length / 2.0), sin(a) * (i*s- _length / 2.0));
 			}

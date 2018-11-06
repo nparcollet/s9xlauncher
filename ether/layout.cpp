@@ -1,20 +1,20 @@
-#include "gui.h"
+/* Copyright 2018 PARCOLLET Nicolas, see COPYING file */
+#include "ether.h"
 
-
-UiLayout::UiLayout()
+Layout::Layout()
 :
-	UiObject()
+	Object()
 {
 }
 
-UiLayout::~UiLayout()
+Layout::~Layout()
 {
 	for (int i = 0; i < _childs.size(); i ++) {
 		delete _childs[i];
 	}
 }
 
-void UiLayout::clear()
+void Layout::clear()
 {
 	for (int i = 0; i < _childs.size(); i ++) {
 		delete _childs[i];
@@ -23,7 +23,7 @@ void UiLayout::clear()
 	refresh();
 }
 
-void UiLayout::set(int index, UiObject * obj)
+void Layout::set(int index, Object * obj)
 {
 	if (_childs[index] != obj) {
 		if (_childs[index]) {
@@ -36,7 +36,7 @@ void UiLayout::set(int index, UiObject * obj)
 	}
 }
 
-void UiLayout::resize(int size)
+void Layout::resize(int size)
 {
 	int oldSize = _childs.size();
 	if (size != oldSize) {
@@ -53,22 +53,22 @@ void UiLayout::resize(int size)
 	}
 }
 
-UiObject * UiLayout::get(int index)
+Object * Layout::get(int index)
 {
 	return _childs[index];
 }
 
-const UiObject * UiLayout::get(int index) const
+const Object * Layout::get(int index) const
 {
 	return _childs[index];
 }
 
-int UiLayout::count() const
+int Layout::count() const
 {
 	return _childs.size();
 }
 
-void UiLayout::render(SDL_Renderer * renderer)
+void Layout::render(SDL_Renderer * renderer)
 {
 	for (int i = 0; i < _childs.size(); i ++) {
 		if (_childs[i]) {

@@ -12,20 +12,18 @@ CPPFLAGS := $(CPPFLAGS)
 
 # SPECIFIC CONFIGURATION
 
-CPPFLAGS += -Iinclude
+CPPFLAGS += -Iether
 CFLAGS   += $(shell pkg-config --cflags sdl2)
 LDFLAGS  += $(shell pkg-config --libs sdl2) -lSDL2_ttf -lSDL2_image
-LDFLAGS  += -lpthread
+LDFLAGS  += -lpthread -fPIC
 
 # CALLABLE RULES
 
 .PHONY: all shared static clean s9xlauncher
 
-all: shared static s9xlauncher
+all: lib s9xlauncher
 
-shared: $(BDIR)/libo2.so
-
-static: $(BDIR)/libo2.a
+lib: $(BDIR)/libether.a
 
 s9xlauncher: $(BDIR)/s9xlauncher
 
@@ -40,29 +38,24 @@ clean:
 
 # OBJECTS
 
-core_objects = $(patsubst core/%.cpp,$(BDIR)/%.o,  $(wildcard core/*.cpp))
-gui_objects  = $(patsubst gui/%.cpp,$(BDIR)/%.o,   $(wildcard gui/*.cpp))
-s9x_objects  = $(patsubst src/%.cpp,$(BDIR)/%.o,   $(wildcard src/*.cpp))
+ether_objects = $(patsubst ether/%.cpp,$(BDIR)/%.o,  $(wildcard ether/*.cpp))
+s9x_objects   = $(patsubst src/%.cpp,$(BDIR)/%.o,    $(wildcard src/*.cpp))
 
-# LIBRARIES
+# LIBRARY
 
-$(BDIR)/libo2.so: $(core_objects) $(gui_objects)
-	@echo "[LD] $@"
-	@$(CXX) $(LDFLAGS) -shared -o $@ $^
-
-$(BDIR)/libo2.a: $(core_objects) $(gui_objects)
+$(BDIR)/libether.a: $(ether_objects)
 	@echo "[AR] $@"
 	@$(AR) -rcs $@ $^
 
 # PROGRAM
 
-$(BDIR)/s9xlauncher: $(s9x_objects) $(BDIR)/libo2.a
+$(BDIR)/s9xlauncher: $(s9x_objects) $(BDIR)/libether.a
 	@echo "[LD] $@"
 	@$(CXX) $(LDFLAGS) $^ -o $@
 
 # GENERIC RULES
 
-$(BDIR)/%.o: */%.cpp
+$(BDIR)/%.o: */%.cpp src/s9x.h ether/ether.h
 	@echo "[CC] $@"
 	@[ -d $(BDIR) ] || mkdir -p $(BDIR)
 	@$(CXX) -c $(CFLAGS) $(CPPFLAGS) $< -o $@
