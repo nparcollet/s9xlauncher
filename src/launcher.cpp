@@ -79,8 +79,11 @@ void S9XLauncher::onStorageAdded(const std::string & device, const std::string &
 				rom.name   = std::string(ent->d_name).substr(0, strlen(ent->d_name) - 4);
 				rom.cover  = mountPoint + "/" +  rom.name + ".jpg";
 				if (stat(rom.cover.c_str(), &st) != 0) {
+					rom.cover = mountPoint + "/" +  rom.name + ".png";
+				}
+				if (stat(rom.cover.c_str(), &st) != 0) {
 					rom.cover = "";
-				};
+				}
 				_all.push_back(rom);
 				LOG_DEBUG("S9XLauncher(), Added rom %s from %s (%s)",
 					rom.name.c_str(), rom.device.c_str(),
