@@ -4,7 +4,7 @@
 S9XLauncher::S9XLauncher(int argc, char ** argv)
 :
 	Application(argc, argv),
-	_cur(_all.end())
+	_current(-1)
 {
 }
 
@@ -30,13 +30,13 @@ void S9XLauncher::onKeyPressed(int key)
 	if (key == KEY_CANCEL) {
 		LOG_DEBUG("S9XLauncher(), Stopping Application");
 		quit();
-	} else if (_cur != _all.end()) {
+	} else if (_current != -1 && _roms.size() > 0) {
 		if (key == KEY_LEFT) {
-			_cur = -- _cur == _all.end() ? -- _cur : _cur;
+			_current = (_current + _roms.size() - 1) % _roms.size();
 		} else if (key == KEY_RIGHT) {
-			_cur = ++ _cur == _all.end() ? _all.begin() : _cur;
+			_current = (_current + 1) % _roms.size();
 		} else if (key == KEY_OK) {
-			_cur->run();
+			_roms[_current].run();
 		} else {
 			LOG_WARNING("S9XLauncher(), Unmappaed key event %d", key);
 		}
@@ -46,16 +46,16 @@ void S9XLauncher::onKeyPressed(int key)
 
 void S9XLauncher::onStorageRemoved(const std::string & device)
 {
-	std::list<S9XRom>::iterator ite = _all.begin();
-	while (ite != _all.end()) {
+	std::vector<S9XRom>::iterator ite = _roms.begin();
+	while (ite != _roms.end()) {
 		if (ite->device() == device) {
-			ite = _all.erase(ite);
+			ite = _roms.erase(ite);
 		} else {
 			++ ite;
 		}
 	}
-	LOG_DEBUG("S9XLauncher(), Disconnected %s, %d roms remain", device.c_str(), _all.size());
-	_cur = _all.size() > 0 ? _all.begin() : _all.end();
+	LOG_DEBUG("S9XLauncher(), Disconnected %s, %d roms remain", device.c_str(), _roms.size());
+	_current = _roms.size() > 0 ? 0 : -1;
 	refresh();
 }
 
@@ -72,14 +72,14 @@ void S9XLauncher::onStorageAdded(const std::string & device, const std::string &
 			char * p = strrchr(ent->d_name, '.');
 			if (p && strcasecmp(p, ".smc") == 0) {
 				S9XRom rom(device, mountPoint, ent->d_name);
-				_all.push_back(rom);
+				_roms.push_back(rom);
 				LOG_DEBUG("S9XLauncher(), Added rom %s", rom.name().c_str());
 			}
 		}
 		closedir (handle);
 	}
-	_cur = _all.size() > 0 ? _all.begin() : _all.end();
-	LOG_DEBUG("S9XLauncher(), Connected %s, %d roms available", device.c_str(), _all.size());
+	LOG_DEBUG("S9XLauncher(), Connected %s, %d roms available", device.c_str(), _roms.size());
+	_current = _roms.size() > 0 ? 0 : -1;
 	refresh();
 }
 
@@ -102,15 +102,15 @@ void S9XLauncher::onCacheError(const std::string & path)
 
 void S9XLauncher::refresh()
 {
-	if (_cur == _all.end()) {
+	if (_current == -1 || _roms.size() == 0) {
 		_title->setText("Please connect a disk with ROM files");
+		_image->setPath("");
 		_left->hide();
 		_right->hide();
-		_image->setPath("");
 	} else {
-		_title->setText(_cur->name());
+		_title->setText(_roms[_current].name());
+		_image->setPath(_roms[_current].cover());
 		_left->show();
 		_right->show();
-		_image->setPath(_cur->cover());
 	}
 }

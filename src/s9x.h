@@ -48,8 +48,8 @@ private:
 	TextItem * _left;
 	TextItem * _right;
 	ImageItem * _image;
-	std::list<S9XRom> _all;
-	std::list<S9XRom>::iterator _cur;
+	std::vector<S9XRom> _roms;
+	int _current;
 };
 
 #endif // S9X_H
