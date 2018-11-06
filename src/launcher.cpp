@@ -36,8 +36,7 @@ void S9XLauncher::onKeyPressed(int key)
 		} else if (key == KEY_RIGHT) {
 			_cur = ++ _cur == _all.end() ? _all.begin() : _cur;
 		} else if (key == KEY_OK) {
-			S9XCommand cmd(_cur->path);
-			cmd.start();
+			_cur->run();
 		} else {
 			LOG_WARNING("S9XLauncher(), Unmappaed key event %d", key);
 		}
@@ -47,9 +46,9 @@ void S9XLauncher::onKeyPressed(int key)
 
 void S9XLauncher::onStorageRemoved(const std::string & device)
 {
-	std::list<Rom>::iterator ite = _all.begin();
+	std::list<S9XRom>::iterator ite = _all.begin();
 	while (ite != _all.end()) {
-		if (ite->device == device) {
+		if (ite->device() == device) {
 			ite = _all.erase(ite);
 		} else {
 			++ ite;
@@ -69,25 +68,12 @@ void S9XLauncher::onStorageAdded(const std::string & device, const std::string &
 		LOG_ERROR("S9XLauncher(), Unable to open roms directory");
 	} else {
 		struct dirent *ent;
-		struct stat st;
 		while ((ent = readdir(handle)) != nullptr) {
 			char * p = strrchr(ent->d_name, '.');
 			if (p && strcasecmp(p, ".smc") == 0) {
-				Rom rom;
-				rom.device = device;
-				rom.path   = mountPoint + "/" + ent->d_name;
-				rom.name   = std::string(ent->d_name).substr(0, strlen(ent->d_name) - 4);
-				rom.cover  = mountPoint + "/" +  rom.name + ".jpg";
-				if (stat(rom.cover.c_str(), &st) != 0) {
-					rom.cover = mountPoint + "/" +  rom.name + ".png";
-				}
-				if (stat(rom.cover.c_str(), &st) != 0) {
-					rom.cover = "";
-				}
+				S9XRom rom(device, mountPoint, ent->d_name);
 				_all.push_back(rom);
-				LOG_DEBUG("S9XLauncher(), Added rom %s from %s (%s)",
-					rom.name.c_str(), rom.device.c_str(),
-					rom.cover.empty() ? "no cover" : "with cover");
+				LOG_DEBUG("S9XLauncher(), Added rom %s", rom.name().c_str());
 			}
 		}
 		closedir (handle);
@@ -122,9 +108,9 @@ void S9XLauncher::refresh()
 		_right->hide();
 		_image->setPath("");
 	} else {
-		_title->setText(_cur->name);
+		_title->setText(_cur->name());
 		_left->show();
 		_right->show();
-		_image->setPath(_cur->cover);
+		_image->setPath(_cur->cover());
 	}
 }
