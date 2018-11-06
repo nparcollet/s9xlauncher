@@ -91,6 +91,7 @@ bool S9XRom::mkconf()
 		handle << "[Unix]" << std::endl;
 		handle << "BaseDir=" << _basedir << "/snes9x" << std::endl;
 		handle << "[Unix/SDL2 Controls]" << std::endl;
+		handle << "J00:B10 = ExitEmu" << std::endl;
 		handle << "J00:Axis0 = Joypad1 Axis Left/Right T=50%" << std::endl;
 		handle << "J00:Axis1 = Joypad1 Axis Up/Down T=50%" << std::endl;
 		handle << "J00:B1 = Joypad1 A" << std::endl;
@@ -101,7 +102,16 @@ bool S9XRom::mkconf()
 		handle << "J00:B5 = Joypad1 R" << std::endl;
 		handle << "J00:B9 = Joypad1 Select" << std::endl;
 		handle << "J00:B8 = Joypad1 Start" << std::endl;
-		handle << "J00:B10 = ExitEmu" << std::endl;
+		handle << "J01:Axis0 = Joypad2 Axis Left/Right T=50%" << std::endl;
+		handle << "J01:Axis1 = Joypad2 Axis Up/Down T=50%" << std::endl;
+		handle << "J01:B1 = Joypad2 A" << std::endl;
+		handle << "J01:B0 = Joypad2 B" << std::endl;
+		handle << "J01:B2 = Joypad2 X" << std::endl;
+		handle << "J01:B3 = Joypad2 Y" << std::endl;
+		handle << "J01:B4 = Joypad2 L" << std::endl;
+		handle << "J01:B5 = Joypad2 R" << std::endl;
+		handle << "J01:B9 = Joypad2 Select" << std::endl;
+		handle << "J01:B8 = Joypad2 Start" << std::endl;
 		handle.close();
 		return true;
 	}
